@@ -41,11 +41,9 @@ function StoryViewer({ user, stories, currentStoryId, isUserTransition = false, 
       
       if (isUserTransition || hasOpenedBefore || userChanged) {
         setIsFirstRender(false);
-      } else if (isFirstRender) {
+      } else if (isFirstRender && onFirstOpen) {
         setIsFirstRender(false);
-        if (onFirstOpen) {
-          onFirstOpen();
-        }
+        onFirstOpen();
       }
     }
   }, [currentStoryId, stories, user.id, isFirstRender, isUserTransition, hasOpenedBefore, onFirstOpen]);
@@ -55,16 +53,12 @@ function StoryViewer({ user, stories, currentStoryId, isUserTransition = false, 
       if (!loadedImages.has(story.imageUrl)) {
         const img = new Image();
         img.onload = () => {
-          setLoadedImages((prev) => {
-            const newSet = new Set(prev);
-            newSet.add(story.imageUrl);
-            return newSet;
-          });
+          setLoadedImages((prev) => new Set([...prev, story.imageUrl]));
         };
         img.src = story.imageUrl;
       }
     });
-  }, [stories]);
+  }, [stories, loadedImages]);
 
   useEffect(() => {
     const currentStory = stories[currentIndex];
@@ -162,28 +156,15 @@ function StoryViewer({ user, stories, currentStoryId, isUserTransition = false, 
   }, [currentIndex, isLoading, onNext]);
 
   const handleClick = (e) => {
-    if (isNavigatingRef.current) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
+    if (isNavigatingRef.current) return;
     
     e.stopPropagation();
-    const screenWidth = window.innerWidth;
-    const leftHalf = screenWidth / 2;
+    const leftHalf = window.innerWidth / 2;
 
     if (e.clientX < leftHalf) {
-      if (currentIndex === 0) {
-        onPreviousUser();
-      } else {
-        handlePrevious();
-      }
+      currentIndex === 0 ? onPreviousUser() : handlePrevious();
     } else {
-      if (currentIndex === stories.length - 1) {
-        onNextUser();
-      } else {
-        handleNext();
-      }
+      currentIndex === stories.length - 1 ? onNextUser() : handleNext();
     }
   };
 
@@ -262,15 +243,6 @@ function StoryViewer({ user, stories, currentStoryId, isUserTransition = false, 
           transition={{
             x: { type: 'spring', stiffness: 400, damping: 35 },
           }}
-          style={{ 
-            position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            width: '100%', 
-            height: '100%', 
-            zIndex: 1,
-            backgroundColor: '#000',
-          }}
         >
           {isLoading && !loadedImages.has(currentStory.imageUrl) && (
             <div className="loading-spinner">
@@ -317,9 +289,7 @@ function StoryViewer({ user, stories, currentStoryId, isUserTransition = false, 
           {stories.map((_, index) => (
             <div key={index} className="progress-bar-container">
               <motion.div
-                className={`progress-bar ${
-                  index === currentIndex ? 'active' : ''
-                } ${index < currentIndex ? 'completed' : ''}`}
+                className={`progress-bar ${index < currentIndex ? 'completed' : ''}`}
                 initial={{ width: index < currentIndex ? '100%' : '0%' }}
                 animate={{
                   width:

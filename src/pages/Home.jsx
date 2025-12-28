@@ -8,16 +8,19 @@ function Home() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedStoryId, setSelectedStoryId] = useState(null);
   const [isUserTransition, setIsUserTransition] = useState(false);
+  const [viewedStories, setViewedStories] = useState(new Set());
   const hasOpenedRef = useRef(false);
 
   const handleStoryClick = (userId, storyId) => {
     setIsUserTransition(false);
-    hasOpenedRef.current = false;
     setSelectedUserId(userId);
     setSelectedStoryId(storyId);
   };
 
   const handleCloseViewer = () => {
+    if (selectedUserId) {
+      setViewedStories((prev) => new Set([...prev, selectedUserId]));
+    }
     setSelectedUserId(null);
     setSelectedStoryId(null);
   };
@@ -94,12 +97,21 @@ function Home() {
 
   const currentUser = getCurrentUser();
 
+  const sortedUsers = [...users].sort((a, b) => {
+    const aViewed = viewedStories.has(a.id);
+    const bViewed = viewedStories.has(b.id);
+    
+    if (aViewed && !bViewed) return 1;
+    if (!aViewed && bViewed) return -1;
+    return 0;
+  });
+
   return (
     <div className="home-container">
       <div className="app-header">
         <h1>Stories</h1>
       </div>
-      <StoryList users={users} onStoryClick={handleStoryClick} />
+      <StoryList users={sortedUsers} onStoryClick={handleStoryClick} viewedStories={viewedStories} />
       {selectedUserId && selectedStoryId && currentUser && (
         <StoryViewer
           key="story-viewer"
