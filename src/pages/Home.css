@@ -1,0 +1,19 @@
+.home-container {
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+}
+
+.app-header {
+  padding: 16px;
+  text-align: center;
+  background: #000;
+  border-bottom: 1px solid #333;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
