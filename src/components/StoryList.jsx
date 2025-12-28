@@ -1,20 +1,26 @@
 import './StoryList.css';
 
-function StoryList({ stories, onStoryClick }) {
+function StoryList({ users, onStoryClick }) {
   return (
     <div className="story-list-container">
       <div className="story-list">
-        {stories.map((story) => (
+        {users.map((user) => (
           <div
-            key={story.id}
+            key={user.id}
             className="story-item"
-            onClick={() => onStoryClick(story.id)}
+            onClick={() => onStoryClick(user.id, user.stories[0].id)}
           >
-            <img
-              src={story.imageUrl}
-              alt={`Story ${story.id}`}
-              className="story-thumbnail"
-            />
+            <div className="story-thumbnail-wrapper">
+              <img
+                src={user.stories[0].imageUrl}
+                alt={`${user.username} story`}
+                className="story-thumbnail"
+              />
+            </div>
+            <div className="story-user-avatar">
+              <img src={user.avatar} alt={user.username} />
+            </div>
+            <span className="story-username">{user.username}</span>
           </div>
         ))}
       </div>
